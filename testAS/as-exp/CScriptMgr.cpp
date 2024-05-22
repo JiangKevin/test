@@ -52,7 +52,6 @@ int CScriptMgr::Run( string fileName )
     r = Init();
     if ( r < 0 )
     {
-        as_engine_->Release();
         return -1;
     }
     //
@@ -61,14 +60,12 @@ int CScriptMgr::Run( string fileName )
     r = CompileScript( fileName );
     if ( r < 0 )
     {
-        as_engine_->Release();
         return -1;
     }
     //
     r = CreateCtx();
     if ( r < 0 )
     {
-        as_engine_->Release();
         return -1;
     }
     //
@@ -81,6 +78,7 @@ int CScriptMgr::Run( string fileName )
 
     // Shut down the engine
     as_engine_->ShutDownAndRelease();
+    as_engine_->Release();
 }
 //
 int CScriptMgr::Init()
@@ -202,10 +200,10 @@ int CScriptMgr::GetAsFunction()
 {
     int r;
     // Find the function for the function we want to execute.
-    asIScriptFunction* func_createScene = as_engine_->GetModule( 0 )->GetFunctionByDecl( "float createScene()" );
+    asIScriptFunction* func_createScene = as_engine_->GetModule( 0 )->GetFunctionByDecl( "float createScene(test &in)" );
     if ( func_createScene == 0 )
     {
-        cout << "The function 'float createScene()' was not found." << endl;
+        cout << "The function 'float createScene(test &in)' was not found." << endl;
         as_context_->Release();
         as_engine_->Release();
         return -1;
@@ -223,6 +221,9 @@ int CScriptMgr::GetAsFunction()
         as_engine_->Release();
         return -1;
     }
+    // Now we need to pass the parameters to the script function.
+    test* obj = new test();
+    as_context_->SetArgObject( 0, obj );
     // Execute the function
     cout << "Executing the script." << endl;
     cout << "---" << endl;
@@ -249,7 +250,9 @@ int CScriptMgr::GetAsFunction()
             cout << "desc: " << as_context_->GetExceptionString() << endl;
         }
         else
+        {
             cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
+        }
     }
     else
     {
