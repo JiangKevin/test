@@ -3,7 +3,7 @@
 #include "add_on/scriptstdstring/scriptstdstring.h"
 #include "add_on/weakref/weakref.h"
 //
-#include "bind.h"
+#include "asBind.h"
 //
 CScriptMgr::CScriptMgr()
 {
@@ -74,11 +74,16 @@ int CScriptMgr::Run( string fileName )
         return -1;
     }
     // We must release the contexts when no longer using them
-    as_context_->Release();
-
+    if ( as_context_ )
+    {
+        as_context_->Release();
+    }
     // Shut down the engine
-    as_engine_->ShutDownAndRelease();
-    as_engine_->Release();
+    if ( as_engine_ )
+    {
+        as_engine_->ShutDownAndRelease();
+        as_engine_->Release();
+    }
 }
 //
 int CScriptMgr::Init()
@@ -253,11 +258,15 @@ int CScriptMgr::GetAsFunction()
         {
             cout << "The script ended for some unforeseen reason (" << r << ")." << endl;
         }
+        return - 1;
     }
     else
     {
         // Retrieve the return value from the context
         float returnValue = as_context_->GetReturnFloat();
         cout << "The script function returned: " << returnValue << endl;
+        return 0;
     }
+    // 
+    return 0;
 };
